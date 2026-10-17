@@ -25,8 +25,35 @@
 </div>
 
 <div align="center">
+  <a href="https://github.com/Fatihx64/CompressO_GPU/releases/download/v3.0.0-gpu/CompressO_3.0.0_x64-setup.exe">
+    <img src="https://img.shields.io/badge/Download-Windows_Installer_(.exe)-brightgreen?style=for-the-badge&logo=windows" alt="Download Windows Installer" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/Fatihx64/CompressO_GPU/releases/download/v3.0.0-gpu/CompressO_3.0.0_x64-portable.zip">
+    <img src="https://img.shields.io/badge/Download-Portable_Zip_(No_Install)-blue?style=for-the-badge&logo=windows" alt="Download Portable Zip" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/Fatihx64/CompressO_GPU/releases/tag/v3.0.0-gpu">
+    <img src="https://img.shields.io/badge/All_Releases-v3.0.0--gpu-orange?style=for-the-badge" alt="All Releases" />
+  </a>
+</div>
+
+<br />
+
+<div align="center">
   <img src="public/screenshot.png" alt="Screenshot" height="500" style="border-radius: 16px;" />
 </div>
+
+---
+
+## 📥 Quick Downloads (Pre-built Binaries)
+
+You do **not** need to clone the repository or install developer tools to use CompressO-GPU. Just download and run:
+
+| Package | Format | Size | Details |
+|---|---|---|---|
+| **[CompressO_3.0.0_x64-setup.exe](https://github.com/Fatihx64/CompressO_GPU/releases/download/v3.0.0-gpu/CompressO_3.0.0_x64-setup.exe)** | Installer | **~68 MB** | Standard Windows installer with desktop and start menu shortcuts (Recommended) |
+| **[CompressO_3.0.0_x64-portable.zip](https://github.com/Fatihx64/CompressO_GPU/releases/download/v3.0.0-gpu/CompressO_3.0.0_x64-portable.zip)** | Portable | **~88 MB** | Standalone portable archive. Extract and run `compressO.exe` directly |
 
 ---
 

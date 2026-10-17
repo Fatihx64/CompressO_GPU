@@ -22,6 +22,7 @@ latest.json
 *.mkv
 *.webm
 *.avi
+dist-release/
 
 # debug
 npm-debug.log*
