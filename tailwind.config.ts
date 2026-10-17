@@ -36,6 +36,7 @@ const config: Config = {
     './src/**/*.{js,ts,jsx,tsx,mdx}',
     // NextUI Components
     './node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}',
+    './node_modules/.pnpm/@heroui+theme*/**/dist/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
