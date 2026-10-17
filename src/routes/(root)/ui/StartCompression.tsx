@@ -207,7 +207,6 @@ function StartCompression() {
                                 .preserveExistingSubtitles,
                           }
                         : null,
-                    enableGpu: v.config?.enableGpu ?? true,
                   } satisfies VideoCompressionConfig)
                 : undefined,
             imageConfig:

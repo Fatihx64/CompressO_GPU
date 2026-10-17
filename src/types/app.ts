@@ -90,7 +90,6 @@ export type VideoConfig = {
   subtitlesConfig?: SubtitlesConfig | null
   shouldEnableCustomSpeed?: boolean
   customSpeed?: number | null
-  enableGpu?: boolean
 }
 
 export type Video = {

@@ -117,7 +117,7 @@ impl FFMPEG {
 
         let mut cmd_args: Vec<&str> = Vec::new();
 
-        if enable_gpu.unwrap_or(false) {
+        if enable_gpu.unwrap_or(true) {
             cmd_args.extend_from_slice(&["-hwaccel", "auto"]);
         }
 
@@ -184,7 +184,7 @@ impl FFMPEG {
 
         let file_metadata = get_file_metadata(video_path).map_err(|err| err.to_string())?;
         let original_extension = &file_metadata.extension;
-        let use_gpu = enable_gpu.unwrap_or(false);
+        let use_gpu = enable_gpu.unwrap_or(true);
 
         // Codec
         let output_codec: String = {

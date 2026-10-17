@@ -54,7 +54,6 @@ export const videoConfigInitialState: VideoConfig = {
   },
   shouldEnableCustomSpeed: false,
   customSpeed: undefined,
-  enableGpu: true,
 }
 
 export const svgSettingInitialState = {
