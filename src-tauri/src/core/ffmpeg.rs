@@ -69,6 +69,7 @@ impl FFMPEG {
         trim_segments: Option<&Vec<VideoTrimSegment>>,
         subtitles_config: Option<&SubtitlesConfig>,
         speed: Option<f32>,
+        enable_gpu: Option<bool>,
     ) -> Result<VideoCompressionResult, String> {
         if !EXTENSIONS.contains(&convert_to_extension) {
             return Err(String::from("Invalid convert to extension."));
@@ -115,6 +116,10 @@ impl FFMPEG {
             .collect();
 
         let mut cmd_args: Vec<&str> = Vec::new();
+
+        if enable_gpu.unwrap_or(false) {
+            cmd_args.extend_from_slice(&["-hwaccel", "auto"]);
+        }
 
         cmd_args.push("-i");
         cmd_args.push(video_path);
@@ -177,44 +182,25 @@ impl FFMPEG {
             "error",
         ]);
 
-        let mut cmd_args = if !is_gif_target {
-            match preset_name {
-                Some(preset) => match preset {
-                    "thunderbolt" => cmd_args,
-                    _ => {
-                        cmd_args.extend_from_slice(&[
-                            "-pix_fmt:v:0",
-                            "yuv420p",
-                            "-b:v:0",
-                            "0",
-                            "-movflags",
-                            "+faststart",
-                            "-preset",
-                            "slow",
-                        ]);
-                        cmd_args
-                    }
-                },
-                None => cmd_args,
-            }
-        } else {
-            cmd_args.extend_from_slice(&["-preset", "ultrafast"]);
-            cmd_args
-        };
-
         let file_metadata = get_file_metadata(video_path).map_err(|err| err.to_string())?;
         let original_extension = &file_metadata.extension;
+        let use_gpu = enable_gpu.unwrap_or(false);
 
         // Codec
         let output_codec: String = {
-            fn default_codec(convert_to_extension: &str) -> String {
+            fn default_codec(convert_to_extension: &str, use_gpu: bool) -> String {
                 match convert_to_extension {
                     "webm" => "libvpx-vp9".to_string(),
-                    _ => "libx264".to_string(),
+                    _ => {
+                        if use_gpu {
+                            "h264_nvenc".to_string()
+                        } else {
+                            "libx264".to_string()
+                        }
+                    }
                 }
             }
 
-            /// Check if a codec is compatible with the target container format
             fn is_codec_compatible(codec: &str, container: &str) -> bool {
                 match container {
                     "webm" => {
@@ -226,9 +212,17 @@ impl FFMPEG {
             }
 
             if is_gif_target {
-                default_codec(convert_to_extension)
+                default_codec(convert_to_extension, false)
             } else if let Some(codec) = video_codec {
-                codec.to_string()
+                if use_gpu {
+                    match codec {
+                        "libx264" => "h264_nvenc".to_string(),
+                        "libx265" => "hevc_nvenc".to_string(),
+                        other => other.to_string(),
+                    }
+                } else {
+                    codec.to_string()
+                }
             } else {
                 if preset_name.is_none() {
                     let source_streams = {
@@ -239,43 +233,111 @@ impl FFMPEG {
                     match source_streams.first() {
                         Some(stream) => {
                             let source_codec = if stream.codec == "av1" {
-                                "libsvtav1".to_string() // libsvtav1 is faster than original av1
+                                "libsvtav1".to_string()
                             } else {
                                 stream.codec.clone()
                             };
-                            if original_extension == convert_to_extension
-                                || is_codec_compatible(&source_codec, convert_to_extension)
-                            {
-                                source_codec
+                            if use_gpu {
+                                if source_codec.contains("264") {
+                                    "h264_nvenc".to_string()
+                                } else if source_codec.contains("265") || source_codec.contains("hevc") {
+                                    "hevc_nvenc".to_string()
+                                } else if original_extension == convert_to_extension
+                                    || is_codec_compatible(&source_codec, convert_to_extension)
+                                {
+                                    source_codec
+                                } else {
+                                    default_codec(convert_to_extension, true)
+                                }
                             } else {
-                                default_codec(convert_to_extension)
+                                if original_extension == convert_to_extension
+                                    || is_codec_compatible(&source_codec, convert_to_extension)
+                                {
+                                    source_codec
+                                } else {
+                                    default_codec(convert_to_extension, false)
+                                }
                             }
                         }
-                        None => default_codec(convert_to_extension),
+                        None => default_codec(convert_to_extension, use_gpu),
                     }
                 } else {
-                    default_codec(convert_to_extension)
+                    default_codec(convert_to_extension, use_gpu)
                 }
             }
         };
-        cmd_args.extend_from_slice(&["-c:v:0", output_codec.as_str()]);
 
-        // Quality
+        let is_nvenc = output_codec.contains("nvenc");
+
         let compression_quality: String = {
-            let default_crf: u16 = 28;
-            let max_crf: u16 = 36;
-            let min_crf: u16 = 24;
+            let default_val: u16 = 28;
+            let max_val: u16 = 36;
+            let min_val: u16 = if is_nvenc { 22 } else { 24 };
             if (0..=100).contains(&quality) {
-                let diff = (max_crf - min_crf) - ((max_crf - min_crf) * quality) / 100;
-                format!("{}", min_crf + diff)
+                let diff = (max_val - min_val) - ((max_val - min_val) * quality) / 100;
+                format!("{}", min_val + diff)
             } else {
-                format!("{default_crf}")
+                format!("{default_val}")
             }
         };
-        if preset_name.is_some() && !is_gif_target {
-            cmd_args.extend_from_slice(&["-crf", compression_quality.as_str()]);
+
+        if is_nvenc {
+            cmd_args.extend_from_slice(&[
+                "-pix_fmt:v:0",
+                "yuv420p",
+                "-b:v:0",
+                "0",
+                "-movflags",
+                "+faststart",
+            ]);
+
+            match preset_name {
+                Some("thunderbolt") => {
+                    cmd_args.extend_from_slice(&["-preset", "p2", "-tune", "ll"]);
+                }
+                Some(_) => {
+                    cmd_args.extend_from_slice(&["-preset", "p6", "-tune", "hq"]);
+                }
+                None => {
+                    cmd_args.extend_from_slice(&["-preset", "p5"]);
+                }
+            }
+
+            cmd_args.extend_from_slice(&["-c:v:0", output_codec.as_str()]);
+
+            if preset_name.is_some() && !is_gif_target {
+                cmd_args.extend_from_slice(&["-rc:v:0", "vbr", "-cq:v:0", compression_quality.as_str()]);
+            } else {
+                cmd_args.extend_from_slice(&["-rc:v:0", "vbr", "-cq:v:0", "19"]);
+            }
         } else {
-            cmd_args.extend_from_slice(&["-crf", "18"]);
+            if !is_gif_target {
+                match preset_name {
+                    Some("thunderbolt") => {}
+                    _ => {
+                        cmd_args.extend_from_slice(&[
+                            "-pix_fmt:v:0",
+                            "yuv420p",
+                            "-b:v:0",
+                            "0",
+                            "-movflags",
+                            "+faststart",
+                            "-preset",
+                            "slow",
+                        ]);
+                    }
+                }
+            } else {
+                cmd_args.extend_from_slice(&["-preset", "ultrafast"]);
+            }
+
+            cmd_args.extend_from_slice(&["-c:v:0", output_codec.as_str()]);
+
+            if preset_name.is_some() && !is_gif_target {
+                cmd_args.extend_from_slice(&["-crf", compression_quality.as_str()]);
+            } else {
+                cmd_args.extend_from_slice(&["-crf", "18"]);
+            }
         }
 
         // Build the post-processing chain for video (transforms + scale + pad)
@@ -945,6 +1007,7 @@ impl FFMPEG {
             let subtitles_config = video_options.subtitles_config.as_ref();
             let strip_metadata = video_options.strip_metadata;
             let speed = video_options.speed;
+            let enable_gpu = video_options.enable_gpu;
 
             match ffmpeg_instance
                 .compress_video(
@@ -965,6 +1028,7 @@ impl FFMPEG {
                     trim_segments,
                     subtitles_config,
                     speed,
+                    enable_gpu,
                 )
                 .await
             {

@@ -150,6 +150,7 @@ pub struct VideoCompressionConfig {
     pub trim_segments: Option<Vec<VideoTrimSegment>>,
     pub subtitles_config: Option<SubtitlesConfig>,
     pub speed: Option<f32>,
+    pub enable_gpu: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

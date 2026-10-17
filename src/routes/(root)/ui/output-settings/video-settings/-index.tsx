@@ -19,6 +19,7 @@ import VideoSpeed from './video/Speed'
 import TransformVideo from './video/TransformVideo'
 import TrimVideo from './video/TrimVideo'
 import VideoCodec from './video/VideoCodec'
+import GpuAcceleration from './video/GpuAcceleration'
 import { appProxy } from '../../../-state'
 
 type VideoSettingsProps = {
@@ -97,6 +98,10 @@ function VideoSettings({ mediaIndex }: VideoSettingsProps) {
         <div className="my-4">
           {tab === 'video' ? (
             <div>
+              <>
+                <GpuAcceleration mediaIndex={mediaIndex} />
+                <Divider className="my-3" />
+              </>
               <>
                 <CompressionPreset mediaIndex={mediaIndex} />
                 <Divider className="my-3" />

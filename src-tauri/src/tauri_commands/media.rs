@@ -69,6 +69,7 @@ pub async fn compress_media_batch(
             let subtitles_config = video_config.subtitles_config.as_ref();
             let strip_metadata = video_config.strip_metadata;
             let speed = video_config.speed;
+            let enable_gpu = video_config.enable_gpu;
 
             let mut ffmpeg_instance = FFMPEG::new(&app)
                 .map_err(|e| format!("Failed to create ffmpeg instance: {}", e))?;
@@ -92,6 +93,7 @@ pub async fn compress_media_batch(
                     trim_segments,
                     subtitles_config,
                     speed,
+                    enable_gpu,
                 )
                 .await
             {

@@ -22,15 +22,27 @@ type VideoCodecOption = {
 
 const VIDEO_CODECS: readonly VideoCodecOption[] = [
   {
+    value: 'h264_nvenc',
+    name: 'H.264 (NVIDIA GPU ⚡)',
+    description: 'NVIDIA NVENC hardware accelerated (Ultra-Fast)',
+    compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
+  },
+  {
+    value: 'hevc_nvenc',
+    name: 'H.265 / HEVC (NVIDIA GPU ⚡)',
+    description: 'NVIDIA NVENC high efficiency (Ultra-Fast)',
+    compatible_containers: ['mp4', 'mov', 'mkv'] as VideoExtension[],
+  },
+  {
     value: 'libx264',
-    name: 'H.264 (AVC)',
-    description: 'Most compatible, good quality',
+    name: 'H.264 (AVC - CPU)',
+    description: 'Standard CPU encoder, good compatibility',
     compatible_containers: ['mp4', 'mov', 'mkv', 'avi'] as VideoExtension[],
   },
   {
     value: 'libx265',
-    name: 'H.265 (HEVC)',
-    description: 'Better compression, newer standard',
+    name: 'H.265 (HEVC - CPU)',
+    description: 'Better compression, slower CPU encode',
     compatible_containers: ['mp4', 'mov', 'mkv'] as VideoExtension[],
   },
   {

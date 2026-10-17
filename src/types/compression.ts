@@ -224,6 +224,15 @@ export type VideoCompressionConfig = {
   trimSegments?: VideoTrimSegment[] | null
   subtitlesConfig?: SubtitlesConfig | null
   speed?: number | null
+  enableGpu?: boolean
+}
+
+export type GpuInfo = {
+  hasGpu: boolean
+  isNvidia: boolean
+  gpuName: string
+  vendorId: number
+  supportedEncoders: string[]
 }
 
 export type ImageCompressionProgress = {

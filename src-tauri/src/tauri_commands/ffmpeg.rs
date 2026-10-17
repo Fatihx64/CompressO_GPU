@@ -28,6 +28,7 @@ pub async fn compress_video(
     subtitles_config: Option<SubtitlesConfig>,
     strip_metadata: Option<bool>,
     speed: Option<f32>,
+    enable_gpu: Option<bool>,
 ) -> Result<VideoCompressionResult, String> {
     let mut ffmpeg = ffmpeg::FFMPEG::new(&app)?;
     if let Ok(files) =
@@ -57,6 +58,7 @@ pub async fn compress_video(
             trim_segments.as_ref(),
             subtitles_config.as_ref(),
             speed,
+            enable_gpu,
         )
         .await
     {

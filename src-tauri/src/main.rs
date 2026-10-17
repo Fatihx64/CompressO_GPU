@@ -23,6 +23,7 @@ use tauri_commands::{
         get_video_basic_info, get_video_streams,
     },
     file_manager::show_item_in_file_manager,
+    gpu::get_gpu_info_command,
     fs::{
         copy_file_to_clipboard, delete_cache, delete_file, get_file_metadata, get_image_dimension,
         get_svg_dimension, move_file, read_files_from_clipboard, read_files_from_paths,
@@ -333,6 +334,7 @@ async fn main() {
             get_video_streams,
             set_dock_progress,
             clear_dock_badge,
+            get_gpu_info_command,
             check_update,
             download_and_install_update,
             convert_svg_to_png,

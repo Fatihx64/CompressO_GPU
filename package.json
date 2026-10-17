@@ -21,7 +21,7 @@
     "tauri:build:mac": "pnpm tauri:build:mac:arm64 && pnpm tauri:build:mac:x64",
     "generate:latest-json": "node scripts/generate-latest-json.mts",
     "homebrew:release": "tsx scripts/homebrew-release.mts",
-    "pnpm:devPreinstall": "fnm use",
+    "pnpm:devPreinstall": "node -v",
     "postinstall": "husky install",
     "lint-staged": "lint-staged",
     "tsc:check": "tsc --noEmit --skipLibCheck"

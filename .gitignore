@@ -18,6 +18,10 @@
 .DS_Store
 *.pem
 latest.json
+*.mp4
+*.mkv
+*.webm
+*.avi
 
 # debug
 npm-debug.log*
